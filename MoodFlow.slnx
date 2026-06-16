@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="MoodFlow.API/MoodFlow.API.csproj" />
+  <Project Path="MoodFlow.Application/MoodFlow.Application.csproj" />
+  <Project Path="Moodflow.Domain/Moodflow.Domain.csproj" />
+  <Project Path="MooodFlow.Infrastructure/MooodFlow.Infrastructure.csproj" />
+</Solution>
