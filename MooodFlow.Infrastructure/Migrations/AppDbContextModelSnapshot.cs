@@ -42,8 +42,8 @@ namespace MooodFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BedTime")
-                        .HasColumnType("int");
+                    b.Property<TimeOnly>("BedTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("DailyAffirmation")
                         .IsRequired()
@@ -74,8 +74,8 @@ namespace MooodFlow.Infrastructure.Migrations
                     b.Property<int>("MorningMoodScore")
                         .HasColumnType("int");
 
-                    b.Property<int>("WakeUpTime")
-                        .HasColumnType("int");
+                    b.Property<TimeOnly>("WakeUpTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("WaterIntake")
                         .HasColumnType("int");

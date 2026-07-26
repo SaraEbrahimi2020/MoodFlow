@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using MoodFlow.Application.Features.MoodLogs.Queries; // آدرس کوئری که خودت نوشتی
+using MoodFlow.Application.Features.MoodLogs.Commands;
+using MoodFlow.Application.Features.MoodLogs.Queries;
 
 namespace MoodFlow.API.Controllers;
 
@@ -10,23 +11,61 @@ public class MoodLogsController : ControllerBase
 {
     private readonly IMediator _mediator;
 
-    // تزریق وابستگی (DI) برای مدیاآر
+    // تزریق MediatR برای فرستادن کمندها و کوئری‌ها
     public MoodLogsController(IMediator mediator)
     {
         _mediator = mediator;
     }
-
-    // این متد ای‌پ‌ی‌آی برای گرفتن یک مود با آی‌دی است
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    //[HttpGet]
+    //public async Task<ActionResult<List<MoodLogResponse>>> GetAll(CancellationToken cancellationToken)
+    //{
+    //    var result = await _mediator.Send(new GetMoodLogsQuery(), cancellationToken);
+    //    return Ok(result);
+    //}
+    [HttpGet]
+    public async Task<IActionResult> GetPaged([FromQuery] GetMoodLogsWithPaginationQuery query, CancellationToken cancellationToken)
     {
-        // ۱. پاکت نامه (کوئری تو) را می‌سازد
-        var query = new GetMoodLogQuery(id);
-
-        // ۲. آن را به مدیاآر شلیک می‌کند
-        var response = await _mediator.Send(query);
-
-        // ۳. خروجی را با وضعیت ۲۰۰ (OK) برمی‌گرداند
-        return Ok(response);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
     }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<MoodLogResponse>> GetById(long id, CancellationToken cancellationToken)
+    {
+        var query = new GetMoodLogQuery(id);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result == null)
+        {
+            return NotFound("دفترچه‌ای با این شناسه پیدا نشد.");
+        }
+
+        return Ok(result);
+    }
+    [HttpPost]
+    public async Task<ActionResult<long>> Create([FromBody] CreateMoodLogCommand command, CancellationToken cancellationToken)
+    {
+        var id = await _mediator.Send(command, cancellationToken);
+        return Ok(id);
+    }
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, UpdateMoodLogCommand command, CancellationToken cancellationToken)
+    {
+        if (id != command.Id)
+        {
+            return BadRequest(new { Message = "شناسه مسیر درخواست با شناسه دیتای ارسالی همخوانی ندارد." });
+        }
+
+        await _mediator.Send(command, cancellationToken);
+
+        return NoContent();
+    }
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new DeleteMoodLogCommand(id), cancellationToken);
+
+        // پاسخ ۲۰۴ طبق استاندارد REST
+        return NoContent();
+    }
+
 }

@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using MoodFlow.Domain.Enums;
+using MoodFlow.Domain.Repositories;
 
 namespace MoodFlow.Application.Features.MoodLogs.Queries;
 
@@ -7,7 +8,7 @@ public class MoodLogResponse
 {
     public long Id { get; set; }
     public DateTime Date { get; set; }
-    public int WakeUpTime { get; set; }
+    public TimeOnly WakeUpTime { get; set; }
     public int EnergyLevel { get; set; }
     public MoodEmoji MorningMoodScore { get; set; }
     public string Gratitude1 { get; set; } = string.Empty;
@@ -22,32 +23,50 @@ public class MoodLogResponse
     public string AmazingThingsHappened3 { get; set; } = string.Empty;
     public string HowCouldIHaveMadeTodayBetter { get; set; } = string.Empty;
     public int WaterIntake { get; set; }
-    public int BedTime { get; set; }
+    public TimeOnly BedTime { get; set; }
 }
 public record GetMoodLogQuery(long Id) : IRequest<MoodLogResponse>;
 
-public class GetMoodLogQueryHandler : IRequestHandler<GetMoodLogQuery, MoodLogResponse>
+public class GetMoodLogQueryHandler : IRequestHandler<GetMoodLogQuery, MoodLogResponse?>
 {
-    public async Task<MoodLogResponse> Handle(GetMoodLogQuery request, CancellationToken cancellationToken)
-    {
-        // فعلاً به صورت فیک یک پاسخ پر از دیتای دفترچه می‌سازیم تا ببینیم در سواگر چطور دیده می‌شود
-        var response = new MoodLogResponse
-        {
-            Id = request.Id,
-            Date = DateTime.UtcNow,
-            WakeUpTime = 7,
-            EnergyLevel = 4,
-            MorningMoodScore = MoodEmoji.Excellent,// عالی 😊
-            Gratitude1 = "بابت پروژه شخصی جدیدم",
-            Gratitude2 = "بابت یادگیری CQRS",
-            Gratitude3 = "بابت حس خوبی که امروز دارم",
-            WhatWouldMakeTodayGreat1 = "کدها بدون خطا Build بشن",
-            DailyAffirmation = "من هر روز در حال رشد و یادگیری هستم",
-            AmazingThingsHappened1 = "اولین خروجی زنده رو در سواگر دیدم!",
-            WaterIntake = 6,
-            BedTime = 23
-        };
+    private readonly IMoodLogRepository _moodLogRepository;
 
-        return await Task.FromResult(response);
+    public GetMoodLogQueryHandler(IMoodLogRepository moodLogRepository)
+    {
+        _moodLogRepository = moodLogRepository;
+    }
+
+    public async Task<MoodLogResponse?> Handle(GetMoodLogQuery request, CancellationToken cancellationToken)
+    {
+        // خواندن دیتای واقعی با استفاده از Id که در رکورد تعریف کردی
+        var moodLog = await _moodLogRepository.GetByIdAsync(request.Id, cancellationToken);
+
+        if (moodLog == null)
+        {
+            return null;
+        }
+
+        // مپ کردن انتیتی دیتابیس به کلاس MoodLogResponse شما
+        return new MoodLogResponse
+        {
+            Id = moodLog.Id,
+            Date = moodLog.Date,
+            WakeUpTime = moodLog.WakeUpTime,
+            EnergyLevel = moodLog.EnergyLevel,
+            MorningMoodScore = moodLog.MorningMoodScore,
+            Gratitude1 = moodLog.Gratitude1,
+            Gratitude2 = moodLog.Gratitude2,
+            Gratitude3 = moodLog.Gratitude3,
+            WhatWouldMakeTodayGreat1 = moodLog.WhatWouldMakeTodayGreat1,
+            WhatWouldMakeTodayGreat2 = moodLog.WhatWouldMakeTodayGreat2,
+            WhatWouldMakeTodayGreat3 = moodLog.WhatWouldMakeTodayGreat3,
+            DailyAffirmation = moodLog.DailyAffirmation,
+            AmazingThingsHappened1 = moodLog.AmazingThingsHappened1,
+            AmazingThingsHappened2 = moodLog.AmazingThingsHappened2,
+            AmazingThingsHappened3 = moodLog.AmazingThingsHappened3,
+            HowCouldIHaveMadeTodayBetter = moodLog.HowCouldIHaveMadeTodayBetter,
+            WaterIntake = moodLog.WaterIntake,
+            BedTime = moodLog.BedTime
+        };
     }
 }

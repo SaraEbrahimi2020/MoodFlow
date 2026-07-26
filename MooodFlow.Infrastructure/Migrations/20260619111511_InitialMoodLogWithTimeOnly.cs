@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MooodFlow.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMoodLogWithTimeOnly : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,7 @@ namespace MooodFlow.Infrastructure.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WakeUpTime = table.Column<int>(type: "int", nullable: false),
+                    WakeUpTime = table.Column<TimeOnly>(type: "time", nullable: false),
                     EnergyLevel = table.Column<int>(type: "int", nullable: false),
                     MorningMoodScore = table.Column<int>(type: "int", nullable: false),
                     Gratitude1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -33,7 +33,7 @@ namespace MooodFlow.Infrastructure.Migrations
                     AmazingThingsHappened3 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     HowCouldIHaveMadeTodayBetter = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WaterIntake = table.Column<int>(type: "int", nullable: false),
-                    BedTime = table.Column<int>(type: "int", nullable: false)
+                    BedTime = table.Column<TimeOnly>(type: "time", nullable: false)
                 },
                 constraints: table =>
                 {

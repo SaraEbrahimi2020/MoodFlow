@@ -12,8 +12,8 @@ using MoodFlow.Infrastructure.Persistence;
 namespace MooodFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260614190811_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260619111511_InitialMoodLogWithTimeOnly")]
+    partial class InitialMoodLogWithTimeOnly
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,8 +45,8 @@ namespace MooodFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("BedTime")
-                        .HasColumnType("int");
+                    b.Property<TimeOnly>("BedTime")
+                        .HasColumnType("time");
 
                     b.Property<string>("DailyAffirmation")
                         .IsRequired()
@@ -77,8 +77,8 @@ namespace MooodFlow.Infrastructure.Migrations
                     b.Property<int>("MorningMoodScore")
                         .HasColumnType("int");
 
-                    b.Property<int>("WakeUpTime")
-                        .HasColumnType("int");
+                    b.Property<TimeOnly>("WakeUpTime")
+                        .HasColumnType("time");
 
                     b.Property<int>("WaterIntake")
                         .HasColumnType("int");
