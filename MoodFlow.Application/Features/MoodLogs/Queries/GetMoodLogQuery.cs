@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Mapster;
+using MediatR;
 using MoodFlow.Domain.Enums;
 using MoodFlow.Domain.Repositories;
 
@@ -38,35 +39,14 @@ public class GetMoodLogQueryHandler : IRequestHandler<GetMoodLogQuery, MoodLogRe
 
     public async Task<MoodLogResponse?> Handle(GetMoodLogQuery request, CancellationToken cancellationToken)
     {
-        // خواندن دیتای واقعی با استفاده از Id که در رکورد تعریف کردی
         var moodLog = await _moodLogRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (moodLog == null)
         {
             return null;
         }
+        var response = moodLog.Adapt<MoodLogResponse>();
 
-        // مپ کردن انتیتی دیتابیس به کلاس MoodLogResponse شما
-        return new MoodLogResponse
-        {
-            Id = moodLog.Id,
-            Date = moodLog.Date,
-            WakeUpTime = moodLog.WakeUpTime,
-            EnergyLevel = moodLog.EnergyLevel,
-            MorningMoodScore = moodLog.MorningMoodScore,
-            Gratitude1 = moodLog.Gratitude1,
-            Gratitude2 = moodLog.Gratitude2,
-            Gratitude3 = moodLog.Gratitude3,
-            WhatWouldMakeTodayGreat1 = moodLog.WhatWouldMakeTodayGreat1,
-            WhatWouldMakeTodayGreat2 = moodLog.WhatWouldMakeTodayGreat2,
-            WhatWouldMakeTodayGreat3 = moodLog.WhatWouldMakeTodayGreat3,
-            DailyAffirmation = moodLog.DailyAffirmation,
-            AmazingThingsHappened1 = moodLog.AmazingThingsHappened1,
-            AmazingThingsHappened2 = moodLog.AmazingThingsHappened2,
-            AmazingThingsHappened3 = moodLog.AmazingThingsHappened3,
-            HowCouldIHaveMadeTodayBetter = moodLog.HowCouldIHaveMadeTodayBetter,
-            WaterIntake = moodLog.WaterIntake,
-            BedTime = moodLog.BedTime
-        };
+        return response;
     }
 }

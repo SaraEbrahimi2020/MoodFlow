@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using MoodFlow.Application.Common.Behaviors; // آدرس دقیق پوشه بیهیویر خودت را بگذار
+using MoodFlow.Application.Common.Mappings;
+using System.Reflection;
 
 namespace MoodFlow.Application;
 
@@ -24,7 +25,7 @@ public static class DependencyInjection
 
         // ۲. ثبت خودکار تمام Validatorهای لایه Application از طریق اسکن اسمبلی
         services.AddValidatorsFromAssembly(assembly);
-
+        MapsterConfig.RegisterMappings();
         return services;
     }
 }
