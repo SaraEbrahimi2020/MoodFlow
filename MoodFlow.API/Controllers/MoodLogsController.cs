@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoodFlow.Application.Features.MoodLogs.Commands;
 using MoodFlow.Application.Features.MoodLogs.Queries;
 
 namespace MoodFlow.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class MoodLogsController : ControllerBase

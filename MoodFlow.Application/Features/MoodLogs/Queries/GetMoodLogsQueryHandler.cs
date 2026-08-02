@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Domain.Repositories;
 
 namespace MoodFlow.Application.Features.MoodLogs.Queries;
@@ -7,16 +8,23 @@ public record GetMoodLogsQuery : IRequest<List<MoodLogResponse>>;
 public class GetMoodLogsQueryHandler : IRequestHandler<GetMoodLogsQuery, List<MoodLogResponse>>
 {
     private readonly IMoodLogRepository _repository;
-
-    public GetMoodLogsQueryHandler(IMoodLogRepository repository)
+    private readonly ICurrentUserService _currentUserService; // ۱. اضافه شدن سرویس کاربر جاری
+    public GetMoodLogsQueryHandler(IMoodLogRepository repository, ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<List<MoodLogResponse>> Handle(GetMoodLogsQuery request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
         // ۱. گرفتن تمام رکوردها از ریپازیتوری
-        var logs = await _repository.GetAllAsync(cancellationToken);
+        var logs = await _repository.GetByUserIdAsync(userId, cancellationToken);
 
         // ۲. تبدیل تک‌تک انتیتی‌ها به مدل پاسخ کامل شما به کمک Select
         return logs.Select(log => new MoodLogResponse

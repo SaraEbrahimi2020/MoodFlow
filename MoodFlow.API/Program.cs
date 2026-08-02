@@ -73,6 +73,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 // حتماً باید بالای مسیردهی کنترلرها باشد
 app.UseExceptionHandler();

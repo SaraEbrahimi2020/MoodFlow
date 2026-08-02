@@ -51,6 +51,7 @@ public class MoodLog
         string amazingThingsHappened3,
         string howCouldIHaveMadeTodayBetter,
         int waterIntake,
+        string userId,
         TimeOnly bedTime)
     {
         // اینجا حتی می‌توانیم ولیدیشن‌های دامین (قوانین همیشگی بیزینس) را هم چک کنیم!
@@ -72,6 +73,7 @@ public class MoodLog
             AmazingThingsHappened3 = amazingThingsHappened3,
             HowCouldIHaveMadeTodayBetter = howCouldIHaveMadeTodayBetter,
             WaterIntake = waterIntake,
+            UserId = userId,
             BedTime = bedTime,
             Date = DateTime.UtcNow 
         };

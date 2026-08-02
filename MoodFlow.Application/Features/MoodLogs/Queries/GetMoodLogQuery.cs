@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using MediatR;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Domain.Enums;
 using MoodFlow.Domain.Repositories;
 
@@ -31,16 +32,23 @@ public record GetMoodLogQuery(long Id) : IRequest<MoodLogResponse>;
 public class GetMoodLogQueryHandler : IRequestHandler<GetMoodLogQuery, MoodLogResponse?>
 {
     private readonly IMoodLogRepository _moodLogRepository;
-
-    public GetMoodLogQueryHandler(IMoodLogRepository moodLogRepository)
+    private readonly ICurrentUserService _currentUserService; // ۱. اضافه شدن سرویس کاربر جاری
+    public GetMoodLogQueryHandler(IMoodLogRepository moodLogRepository, ICurrentUserService currentUserService)
     {
         _moodLogRepository = moodLogRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<MoodLogResponse?> Handle(GetMoodLogQuery request, CancellationToken cancellationToken)
     {
-        var moodLog = await _moodLogRepository.GetByIdAsync(request.Id, cancellationToken);
+        var userId = _currentUserService.UserId;
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
+        //var moodLog = await _moodLogRepository.GetByIdAsync(request.Id, cancellationToken);
+        var moodLog = await _moodLogRepository.GetByIdAndUserIdAsync(request.Id, userId, cancellationToken);
         if (moodLog == null)
         {
             return null;

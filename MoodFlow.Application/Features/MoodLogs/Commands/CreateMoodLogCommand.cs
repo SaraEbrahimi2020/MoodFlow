@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Moodflow.Domain.Entities;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Domain.Enums;
 using MoodFlow.Domain.Repositories;
 
@@ -24,14 +25,22 @@ public record CreateMoodLogCommand(
 public class CreateMoodLogCommandHandler : IRequestHandler<CreateMoodLogCommand, long>
 {
     private readonly IMoodLogRepository _moodLogRepository;
-
-    public CreateMoodLogCommandHandler(IMoodLogRepository moodLogRepository)
+    private readonly ICurrentUserService _currentUserService;
+    public CreateMoodLogCommandHandler(IMoodLogRepository moodLogRepository, ICurrentUserService currentUserService)
     {
         _moodLogRepository = moodLogRepository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<long> Handle(CreateMoodLogCommand request, CancellationToken cancellationToken)
     {
+        // گرفتن شناسه کاربر جاری از توکن
+        var userId = _currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
         // ۱. ساخت یک انتیتی جدید بر اساس اطلاعاتی که کاربر فرستاده (Request)
         var moodLog = MoodLog.Create(
 
@@ -50,7 +59,9 @@ public class CreateMoodLogCommandHandler : IRequestHandler<CreateMoodLogCommand,
             request.AmazingThingsHappened3,
             request.HowCouldIHaveMadeTodayBetter,
             request.WaterIntake,
+            userId,
             request.BedTime
+
         );
 
         // ۲. اضافه کردن انتیتی به دی‌بی‌کانتکست از طریق ریپازیتوری

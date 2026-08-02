@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Domain.Repositories;
 
 namespace MoodFlow.Application.Features.MoodLogs.Commands;
@@ -7,16 +8,23 @@ public record DeleteMoodLogCommand(long Id) : IRequest<Unit>;
 public class DeleteMoodLogCommandHandler : IRequestHandler<DeleteMoodLogCommand, Unit>
 {
     private readonly IMoodLogRepository _repository;
-
-    public DeleteMoodLogCommandHandler(IMoodLogRepository repository)
+    private readonly ICurrentUserService _currentUserService; 
+    public DeleteMoodLogCommandHandler(IMoodLogRepository repository, ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(DeleteMoodLogCommand request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
         // ۱. واکشی رکورد برای اطمینان از وجود آن
-        var log = await _repository.GetByIdAsync(request.Id, cancellationToken);
+        var log = await _repository.GetByIdAndUserIdAsync(request.Id, userId, cancellationToken);
 
         if (log == null)
         {

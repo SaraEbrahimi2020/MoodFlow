@@ -17,6 +17,7 @@ public static class DependencyInjection
         // اگر بعداً سرویس‌های دیگری مثل ریپازیتوری‌های دیگر یا کارهای ایمیل و... داشتی هم اینجا ثبت می‌شوند
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         return services;
     }
 }

@@ -18,7 +18,20 @@ public class MoodLogRepository : IMoodLogRepository
     {
         return await _context.MoodLogs.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
-
+    public async Task<List<MoodLog>> GetByUserIdAsync(string userId, CancellationToken cancellationToken)
+    {
+        return await _context.MoodLogs
+            .AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.Date) // یا بر اساس Date
+            .ToListAsync(cancellationToken);
+    }
+    public async Task<MoodLog?> GetByIdAndUserIdAsync(long id, string userId, CancellationToken cancellationToken)
+    {
+        return await _context.MoodLogs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+    }
     public async Task<IEnumerable<MoodLog>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.MoodLogs.ToListAsync(cancellationToken);
@@ -71,6 +84,41 @@ public class MoodLogRepository : IMoodLogRepository
         // ۴. اعمال مرتب‌سازی (جدیدترین‌ها اول) و صفحه‌بندی با Skip و Take
         var items = await query
             .OrderByDescending(x => x.Date)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+    public async Task<(List<MoodLog> Items, int TotalCount)> GetPagedByUserIdAsync(
+    string userId,
+    int pageNumber,
+    int pageSize,
+    DateTime? fromDate,
+    DateTime? toDate,
+    CancellationToken cancellationToken)
+    {
+        var query = _context.MoodLogs
+            .AsNoTracking()
+            .Where(x => x.UserId == userId); // فیلتر امنیتی اصلی
+
+        // اعمال فیلتر اختیاری تاریخ
+        if (fromDate.HasValue)
+        {
+            query = query.Where(x => x.Date >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            query = query.Where(x => x.Date <= toDate.Value);
+        }
+
+        // محاسبه تعداد کل رکوردهای همین کاربر
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // اعمال پجینیشن
+        var items = await query
+            .OrderByDescending(x => x.Date) // یا CreatedAt
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

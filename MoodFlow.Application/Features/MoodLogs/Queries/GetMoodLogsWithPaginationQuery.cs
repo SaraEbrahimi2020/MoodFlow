@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using MediatR;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Application.Common.Models;
 using MoodFlow.Domain.Repositories;
 
@@ -19,17 +20,25 @@ public class GetMoodLogsWithPaginationQueryHandler
     : IRequestHandler<GetMoodLogsWithPaginationQuery, PagedList<MoodLogResponse>>
 {
     private readonly IMoodLogRepository _repository;
-
-    public GetMoodLogsWithPaginationQueryHandler(IMoodLogRepository repository)
+    private readonly ICurrentUserService _currentUserService; // ۱. اضافه شدن سرویس
+    public GetMoodLogsWithPaginationQueryHandler(IMoodLogRepository repository, ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<PagedList<MoodLogResponse>> Handle(
         GetMoodLogsWithPaginationQuery request,
         CancellationToken cancellationToken)
     {
-        var (items, totalCount) = await _repository.GetPagedAsync(
+        var userId = _currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
+        var (items, totalCount) = await _repository.GetPagedByUserIdAsync(
+            userId,
             request.PageNumber,
             request.PageSize,
             request.FromDate,

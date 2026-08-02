@@ -1,9 +1,7 @@
 ﻿using MediatR;
+using MoodFlow.Application.Common.Interfaces;
 using MoodFlow.Domain.Enums;
 using MoodFlow.Domain.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MoodFlow.Application.Features.MoodLogs.Commands;
 
@@ -30,16 +28,23 @@ public record UpdateMoodLogCommand(
 public class UpdateMoodLogCommandHandler : IRequestHandler<UpdateMoodLogCommand, Unit>
 {
     private readonly IMoodLogRepository _moodLogRepository;
-
-    public UpdateMoodLogCommandHandler(IMoodLogRepository repository)
+    private readonly ICurrentUserService _currentUserService; 
+    public UpdateMoodLogCommandHandler(IMoodLogRepository repository, ICurrentUserService currentUserService)
     {
         _moodLogRepository = repository;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(UpdateMoodLogCommand request, CancellationToken cancellationToken)
     {
+        var userId = _currentUserService.UserId;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
+        }
         // ۱. پیدا کردن رکورد قدیمی از دیتابیس
-        var log = await _moodLogRepository.GetByIdAsync(request.Id, cancellationToken);
+        var log = await _moodLogRepository.GetByIdAndUserIdAsync(request.Id, userId, cancellationToken);
 
         if (log == null)
         {
