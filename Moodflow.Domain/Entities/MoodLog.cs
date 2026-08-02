@@ -6,6 +6,7 @@ public class MoodLog
 {
     // ۱. اطلاعات اصلی روز
     public long Id { get;private set; }
+    public string UserId { get; set; } = string.Empty; // شناسه کاربر صاحب لاگ
     public DateTime Date { get; private set; } = DateTime.UtcNow.Date;
 
     // ۲. اطلاعات بخش صبح (خورشید)
