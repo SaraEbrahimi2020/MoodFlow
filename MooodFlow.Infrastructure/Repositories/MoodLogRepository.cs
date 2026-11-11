@@ -32,6 +32,13 @@ public class MoodLogRepository : IMoodLogRepository
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
     }
+    public async Task<MoodLog?> GetByUserIdAndDateAsync(string userId, DateTime date, CancellationToken cancellationToken = default)
+    {
+        var targetDate = date.Date; // فقط بخش تاریخ (بدون ساعت و دقیقه)
+
+        return await _context.MoodLogs
+            .FirstOrDefaultAsync(x => x.UserId == userId && x.Date.Date == targetDate, cancellationToken);
+    }
     public async Task<IEnumerable<MoodLog>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.MoodLogs.ToListAsync(cancellationToken);

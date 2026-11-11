@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoodFlow.Application.Features.MoodLogs.Commands;
 using MoodFlow.Application.Features.MoodLogs.Queries;
+using MoodFlow.Application.Features.MoodLogs.Queries.GetMoodSummary;
 
 namespace MoodFlow.API.Controllers;
 
@@ -68,6 +69,17 @@ public class MoodLogsController : ControllerBase
 
         // پاسخ ۲۰۴ طبق استاندارد REST
         return NoContent();
+    }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult<MoodSummaryResponse>> GetSummary(
+    [FromQuery] DateTime? fromDate,
+    [FromQuery] DateTime? toDate,
+    CancellationToken cancellationToken)
+    {
+        var query = new GetMoodSummaryQuery(fromDate, toDate);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 namespace MoodFlow.API.Middlewares;
 
@@ -46,8 +47,40 @@ public class GlobalExceptionHandler : IExceptionHandler
             await httpContext.Response.WriteAsJsonAsync(validationProblemDetails, cancellationToken);
             return true;
         }
+        // اگر خطا مربوط به پیدا نشدن داده (404) بود
+        if (exception is KeyNotFoundException keyNotFoundException)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
 
-        // برای سایر خطاهای پیش‌بینی نشده سرور (خطای واقعی 500)
+            var notFoundDetails = new ProblemDetails
+            {
+                Status = (int)HttpStatusCode.NotFound,
+                Title = "Not Found",
+                Detail = keyNotFoundException.Message,
+                Instance = httpContext.Request.Path
+            };
+
+            await httpContext.Response.WriteAsJsonAsync(notFoundDetails, cancellationToken);
+            return true;
+        }
+
+        // اگر خطا مربوط به عدم دسترسی/احراز هویت (401) بود
+        // ✅ کد جدید (تغییر فقط در شرط if است)
+        if (exception is UnauthorizedAccessException or SecurityTokenException)
+        {
+            httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+            var unauthorizedDetails = new ProblemDetails
+            {
+                Status = (int)HttpStatusCode.Unauthorized,
+                Title = "Unauthorized",
+                Detail = exception.Message,
+                Instance = httpContext.Request.Path
+            };
+
+            await httpContext.Response.WriteAsJsonAsync(unauthorizedDetails, cancellationToken);
+            return true;
+        }        // برای سایر خطاهای پیش‌بینی نشده سرور (خطای واقعی 500)
         httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
         {

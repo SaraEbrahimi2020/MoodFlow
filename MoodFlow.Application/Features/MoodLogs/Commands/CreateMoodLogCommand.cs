@@ -34,43 +34,72 @@ public class CreateMoodLogCommandHandler : IRequestHandler<CreateMoodLogCommand,
 
     public async Task<long> Handle(CreateMoodLogCommand request, CancellationToken cancellationToken)
     {
-        // گرفتن شناسه کاربر جاری از توکن
         var userId = _currentUserService.UserId;
-
         if (string.IsNullOrEmpty(userId))
         {
             throw new UnauthorizedAccessException("کاربر احراز هویت نشده است.");
         }
-        // ۱. ساخت یک انتیتی جدید بر اساس اطلاعاتی که کاربر فرستاده (Request)
-        var moodLog = MoodLog.Create(
 
-            request.WakeUpTime,
-            request.EnergyLevel,
-            request.MorningMoodScore,
-            request.Gratitude1,
-            request.Gratitude2,
-            request.Gratitude3,
-            request.WhatWouldMakeTodayGreat1,
-            request.WhatWouldMakeTodayGreat2,
-            request.WhatWouldMakeTodayGreat3,
-            request.DailyAffirmation,
-            request.AmazingThingsHappened1,
-            request.AmazingThingsHappened2,
-            request.AmazingThingsHappened3,
-            request.HowCouldIHaveMadeTodayBetter,
-            request.WaterIntake,
-            userId,
-            request.BedTime
+        // بررسی اینکه آیا کاربر برای امروز (تاریخ جاری) قبلاً لاگ ثبت کرده است یا خیر
+        var today = DateTime.UtcNow.Date;
 
-        );
+        // فرض می‌کنیم متدی داریم که لاگ امروز کاربر را پیدا می‌کند
+        var existingLog = await _moodLogRepository.GetByUserIdAndDateAsync(userId, today, cancellationToken);
 
-        // ۲. اضافه کردن انتیتی به دی‌بی‌کانتکست از طریق ریپازیتوری
-        await _moodLogRepository.AddAsync(moodLog, cancellationToken);
+        if (existingLog != null)
+        {
+            // اگر از قبل وجود داشت، آن را آپدیت می‌کنیم (جلوگیری از ثبت رکورد تکراری برای یک روز)
+            existingLog.Update(
+                request.WakeUpTime,
+                request.EnergyLevel,
+                request.MorningMoodScore,
+                request.Gratitude1,
+                request.Gratitude2,
+                request.Gratitude3,
+                request.WhatWouldMakeTodayGreat1,
+                request.WhatWouldMakeTodayGreat2,
+                request.WhatWouldMakeTodayGreat3,
+                request.DailyAffirmation,
+                request.AmazingThingsHappened1,
+                request.AmazingThingsHappened2,
+                request.AmazingThingsHappened3,
+                request.HowCouldIHaveMadeTodayBetter,
+                request.WaterIntake,
+                request.BedTime
+            );
 
-        // ۳. ذخیره نهایی و قطعی تغییرات در SQL Server
-        await _moodLogRepository.SaveChangesAsync(cancellationToken);
+            await _moodLogRepository.UpdateAsync(existingLog, cancellationToken);
+            await _moodLogRepository.SaveChangesAsync(cancellationToken);
 
-        // ۴. بازگرداندن آی‌دی رکورد جدید ساخته شده
-        return moodLog.Id;
+            return existingLog.Id;
+        }
+        else
+        {
+            // اگر وجود نداشت، یک رکورد جدید می‌سازیم
+            var moodLog = MoodLog.Create(
+                request.WakeUpTime,
+                request.EnergyLevel,
+                request.MorningMoodScore,
+                request.Gratitude1,
+                request.Gratitude2,
+                request.Gratitude3,
+                request.WhatWouldMakeTodayGreat1,
+                request.WhatWouldMakeTodayGreat2,
+                request.WhatWouldMakeTodayGreat3,
+                request.DailyAffirmation,
+                request.AmazingThingsHappened1,
+                request.AmazingThingsHappened2,
+                request.AmazingThingsHappened3,
+                request.HowCouldIHaveMadeTodayBetter,
+                request.WaterIntake,
+                userId,
+                request.BedTime
+            );
+
+            await _moodLogRepository.AddAsync(moodLog, cancellationToken);
+            await _moodLogRepository.SaveChangesAsync(cancellationToken);
+
+            return moodLog.Id;
+        }
     }
 }

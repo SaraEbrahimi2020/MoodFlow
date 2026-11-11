@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="MoodFlow.API/MoodFlow.API.csproj" />
+  <Project Path="MoodFlow.Application.Tests/MoodFlow.Application.Tests.csproj" Id="6750d0a5-7f2f-4a3d-b9b1-329f21182ab3" />
   <Project Path="MoodFlow.Application/MoodFlow.Application.csproj" />
   <Project Path="Moodflow.Domain/Moodflow.Domain.csproj" />
   <Project Path="MooodFlow.Infrastructure/MooodFlow.Infrastructure.csproj" />

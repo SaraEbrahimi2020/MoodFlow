@@ -12,7 +12,7 @@ public class AppDbContext : IdentityDbContext
 
     // معرفی موجودیت دفترچه به دیتابیس برای ساخت جدول
     public DbSet<MoodLog> MoodLogs { get; set; }
-
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -21,5 +21,14 @@ public class AppDbContext : IdentityDbContext
         modelBuilder.Entity<MoodLog>()
             .Property(m => m.MorningMoodScore)
             .HasConversion<int>();
+        modelBuilder.Entity<RefreshToken>();
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Token).IsRequired().HasMaxLength(200);
+            entity.Property(x => x.UserId).IsRequired();
+            entity.HasIndex(x => x.Token).IsUnique(); // برای سرعت بالای جستجو
+        });
     }
 }

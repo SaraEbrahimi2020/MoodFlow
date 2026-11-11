@@ -6,7 +6,7 @@ public interface IMoodLogRepository
 {
     Task<MoodLog?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<List<MoodLog>> GetByUserIdAsync(string userId, CancellationToken cancellationToken);
-
+    Task<MoodLog?> GetByUserIdAndDateAsync(string userId, DateTime date, CancellationToken cancellationToken = default);
     Task<IEnumerable<MoodLog>> GetAllAsync(CancellationToken cancellationToken = default);
     Task AddAsync(MoodLog moodLog, CancellationToken cancellationToken = default);
     Task UpdateAsync(MoodLog moodLog, CancellationToken cancellationToken);
